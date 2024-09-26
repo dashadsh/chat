@@ -10,22 +10,24 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/asgi/
 
 import os
 
-from django.core.asgi import get_asgi_application # supports WSGI protocol by default
-from channels.routing import ProtocolTypeRouter, URLRouter
-# supports HTTP and Websocket protocols / routing
-from channels.auth import AuthMiddlewareStack # supports Django's authentication system
-import chat.routing
+from django.core.asgi import get_asgi_application  # ASGI application handler for Django, which also supports WSGI by default
+from channels.routing import ProtocolTypeRouter, URLRouter  # Handles protocol-based routing (e.g., HTTP, WebSocket)
+from channels.auth import AuthMiddlewareStack  # Middleware to enable Django's authentication system for WebSocket connections
+import chat.routing  # Importing the chat app's routing configuration
 
+# Set the default settings module for the Django project
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mywebsite.settings')
 
-# application = get_asgi_application()
-
+# Define the main ASGI application instance
 application = ProtocolTypeRouter({
-	'http': get_asgi_application(),	# Just HTTP for now. (We can add other protocols later.)
+    # Route HTTP requests using Django's ASGI application
+    'http': get_asgi_application(),
 
-	'websocket': AuthMiddlewareStack( # This is a middleware that will allow us to use Django's authentication system
-		URLRouter( # URLRouter is a class that routes
-			chat.routing.websocket_urlpatterns
-		)
-	)
+    # Route WebSocket connections with authentication support
+    'websocket': AuthMiddlewareStack(
+        # URLRouter maps WebSocket connections to the specified URL patterns
+        URLRouter(
+            chat.routing.websocket_urlpatterns  # Use the WebSocket URL patterns defined in the chat app's routing
+        )
+    )
 })
