@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Lobby</title>
+</head>
+
+
+<body>
+	<h1>Let's chat</h1>
+
+
+	<!-- Form to send messages -->
+	<form id="form">
+		<input type="text" name="message"/>
+	</form>
+
+
+	<div id="messages"></div>
+
+	
+	<script type="text/javascript"> //JS tag
+		let url = `ws://${window.location.host}/ws/socket-server/`; //URL to connect to the websocket
+	
+		const chatSocket = new WebSocket(url) //Create a new websocket connection
+
+		chatSocket.onmessage = function(e) { //When a message is received from the websocket
+			let data = JSON.parse(e.data) //Parse the data received from the websocket
+			console.log('Data:', data) //Log the data to the console
+
+			if (data.type === 'chat') { //If the type of the message is chat
+				let messages = document.getElementById('messages') //Get the messages element
+		
+				messages.insertAdjacentHTML('beforeend', `<div>
+										<p>${data.message}</p>
+									</div>`)
+			}	
+		}
+
+		let form = document.getElementById('form') //Get the form element
+
+		form.addEventListener('submit', (e)=> { // When the form is submitted
+			e.preventDefault() //Prevent the form from submitting
+
+			let message = e.target.message.value //Get the value of the message input
+			//let message = document.getElementById('message').value //Get the value of the message input
+			chatSocket.send(JSON.stringify({
+				'message': message
+			})) //Send the message to the websocket
+			form.reset()
+		})
+	</script>
+
+
+</body>
+
+</html>
