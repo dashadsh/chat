@@ -1,41 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 
-
-
-
 <head>
     <meta charset="UTF-8">  <!-- Sets the character encoding for the document -->
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>  <!-- Ensures compatibility with Internet Explorer -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  <!-- Responsive design settings -->
     <title>Lobby</title>  <!-- Title of the webpage -->
+    <style>
+        /* Styling for messages */
+        .message {
+            padding: 8px;  /* Padding inside message bubbles */
+            margin: 4px 0;  /* Margin between messages */
+            border-radius: 5px;  /* Rounded corners for message bubbles */
+        }
+
+        .sent-message {
+            color: green;  /* Change text color to green for messages sent from the current tab */
+            text-align: right;  /* Aligns sent messages to the right */
+        }
+
+        .received-message {
+            color: red;  /* Change text color to red for received messages */
+            text-align: left;  /* Aligns received messages to the left */
+        }
+    </style>
 </head>
-
-
-
 
 <body>
     <h1>Let's chat</h1>  <!-- Main heading for the chat application -->
 
-
-
     <!-- Form to send messages -->
     <form id="form"> 
-        <input type="text" name="message" placeholder="Type your message here..." />  <!-- Input field for user messages -->
+        <input type="text" name="message" placeholder="Type your message here..." required />  <!-- Input field for user messages -->
         <button type="submit">Send</button>  <!-- Button to submit the message -->
     </form>
 
-
-	<!-- Container to display chat messages -->
+    <!-- Container to display chat messages -->
     <div id="messages"></div> 
-
-
 
     <script type="text/javascript">  // JavaScript section for handling WebSocket connection and chat functionality
         // Create WebSocket URL using the current window's host
         let url = `ws://${window.location.host}/ws/socket-server/`;  
 
         const chatSocket = new WebSocket(url);  // Establish a new WebSocket connection
+
+        // Variable to store the last sent message to prevent displaying it twice
+        let lastSentMessage = '';
 
         // Event listener for when a message is received from the WebSocket
         chatSocket.onmessage = function(e) {  
@@ -46,23 +56,35 @@
             if (data.type === 'chat') {  
                 let messages = document.getElementById('messages');  // Get the messages container
                 
-                // Insert the new message into the messages container
-                // messages.insertAdjacentHTML('beforeend', `<div><p>${data.message}</p></div>`);
-				// Insert the new message at the top of the messages container
-				messages.insertAdjacentHTML('afterbegin', `<div><p>${data.message}</p></div>`);
+                // Insert the new received message into the messages container with styling
+                // Only display if it's not the last sent message
+                if (data.message !== lastSentMessage) {
+                    messages.insertAdjacentHTML('afterbegin', `<div class="message received-message">
+                                                                <p>${data.message}</p>
+                                                            </div>`);
+                }
             }	
         };
 
-        let form = document.getElementById('form');  // Get the form element, grab the form by its ID and store it in a variable
+        let form = document.getElementById('form');  // Get the form element
 
         // Event handler for the form submission
         form.addEventListener('submit', (e) => {  
             e.preventDefault();  // Prevent the default form submission behavior
 
             let message = e.target.message.value;  // Retrieve the value of the message input
-            // Send the message as a JSON string to the WebSocket which is stored in the chatSocket variable
-            chatSocket.send(JSON.stringify({
-				'message': message}));  
+            
+            // Send the message as a JSON string to the WebSocket stored in the chatSocket variable
+            chatSocket.send(JSON.stringify({'message': message}));  
+
+            // Insert the sent message into the messages container with styling
+            let messages = document.getElementById('messages');  
+            messages.insertAdjacentHTML('afterbegin', `<div class="message sent-message">
+                                                         <p>${message}</p>
+                                                     </div>`);
+
+            // Store the last sent message to prevent it from being shown as received
+            lastSentMessage = message;
 
             form.reset();  // Reset the form input field
         });
