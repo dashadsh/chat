@@ -10,6 +10,8 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/asgi/
 
 import os
 
+# To route WebSocket requests to the appropriate consumer
+
 from django.core.asgi import get_asgi_application  # ASGI application handler for Django, which also supports WSGI by default
 from channels.routing import ProtocolTypeRouter, URLRouter  # Handles protocol-based routing (e.g., HTTP, WebSocket)
 from channels.auth import AuthMiddlewareStack  # Middleware to enable Django's authentication system for WebSocket connections
@@ -31,3 +33,6 @@ application = ProtocolTypeRouter({
         )
     )
 })
+
+# QUESTION: can it be done in routing.py? 
+# we are referring here to chat/routing.py

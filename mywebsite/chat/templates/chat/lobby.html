@@ -9,25 +9,24 @@
     <style>
         /* Styling for messages */
         .message {
-            padding: 8px;  /* Padding inside message bubbles */
-            margin: 4px 0;  /* Margin between messages */
-            border-radius: 5px;  /* Rounded corners for message bubbles */
+            margin: 0;  /* Remove margin between messages */
+            line-height: 1.2;  /* Adjust line-height for more compact spacing */
         }
 
         .sent-message {
-            color: green;  /* Change text color to green for messages sent from the current tab */
+            color: rgb(71, 139, 101);  /* Change text color to green for messages sent from the current tab */
             text-align: right;  /* Aligns sent messages to the right */
         }
 
         .received-message {
-            color: red;  /* Change text color to red for received messages */
+            color: rgb(178, 89, 150);  /* Change text color to red for received messages */
             text-align: left;  /* Aligns received messages to the left */
         }
     </style>
 </head>
 
 <body>
-    <h1>Let's chat</h1>  <!-- Main heading for the chat application -->
+    <h1>let's chat</h1>  <!-- Main heading for the chat application -->
 
     <!-- Form to send messages -->
     <form id="form"> 
@@ -42,12 +41,12 @@
         // Create WebSocket URL using the current window's host
         let url = `ws://${window.location.host}/ws/socket-server/`;  
 
-        const chatSocket = new WebSocket(url);  // Establish a new WebSocket connection
 
+		// SIC ! To use WebSockets in your JavaScript code, you’ll need to create a new WebSocket object and connect to your server:
+        const chatSocket = new WebSocket(url);  // Establish a new WebSocket connection
         // Variable to store the last sent message to prevent displaying it twice
         let lastSentMessage = '';
-
-        // Event listener for when a message is received from the WebSocket
+        // Event listener ONMESSAGE - called whenever the server sends a message to the client
         chatSocket.onmessage = function(e) {  
             let data = JSON.parse(e.data);  // Parse the incoming data from the WebSocket
             console.log('Data:', data);  // Log the received data for debugging
@@ -75,9 +74,12 @@
             let message = e.target.message.value;  // Retrieve the value of the message input
             
             // Send the message as a JSON string to the WebSocket stored in the chatSocket variable
+			// sends a message to the server by calling the WebSocket object's send method.
             chatSocket.send(JSON.stringify({'message': message}));  
-
-            // Insert the sent message into the messages container with styling
+			// SIC!
+			// When a user sends a message in the HTML form, the chatSocket.send() function sends it via WebSocket to this receive method in the backend
+            
+			// Insert the sent message into the messages container with styling
             let messages = document.getElementById('messages');  
             messages.insertAdjacentHTML('afterbegin', `<div class="message sent-message">
                                                          <p>${message}</p>

@@ -31,6 +31,7 @@ class ChatConsumer(WebsocketConsumer):
     # Uncomment this method to handle disconnection events
     # def disconnect(self, close_code):
     #     # This method is called when the WebSocket connection is closed
+	#	  # If we don't do anything here, we can just PASS
     #     pass
 
     # ------------------------------------------------------------------------------
@@ -38,15 +39,15 @@ class ChatConsumer(WebsocketConsumer):
     def receive(self, text_data):
         # This method is called when a message is received from the WebSocket client.
         
-        text_data_json = json.loads(text_data)  # Parse the JSON data received from the client
-        message = text_data_json['message']  # Set the message variable to the 'message' key in the JSON data
+        text_data_json = json.loads(text_data)  # Parse raw JSON data from the client. json.loads(text_data): Converts the JSON string into a Python dictionary (key-value pairs).
+        message = text_data_json['message']  # Set the message variable to the 'message' key in the JSON data.  Extracts the actual message text sent by the user from the dictionary. For example, if the client sends {"message": "Hello!"}, this line sets message to "Hello!".
 
         # Uncomment to log the received message for debugging
         # print('Message:', message)
 
         # Send the received message to all members of the chat group
-        async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name,
+        async_to_sync(self.channel_layer.group_send)( # Converts asynchronous code to synchronous, allowing us to use it inside this function. self.channel_layer.group_send: This sends a message to a group (the chat room where all users are connected)
+            self.room_group_name, # self.room_group_name: This variable holds the name of the group that the user is part of (defined earlier when the WebSocket connection was made, e.g., 'test').
             {
                 'type': 'chat_message',  # Define the type of event to be handled by chat_message method
                 'message': message  # Pass the message to the group
@@ -65,3 +66,12 @@ class ChatConsumer(WebsocketConsumer):
             'type': 'chat',  # Define the type of message being sent to the client
             'message': message,  # Include the actual message content
         }))
+
+
+
+
+# Summary
+# receive: Captures messages sent by the client.
+# Parses the message to extract the text.
+# Broadcasts the message to all users in the chat room by calling self.channel_layer.group_send.
+# The chat_message method (called later) handles how this message is sent back to all clients, where it's received and displayed in the browser using the HTML code.
